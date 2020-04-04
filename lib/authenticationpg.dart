@@ -1,6 +1,7 @@
 import 'package:blogfirestore/auth.dart';
 import 'package:blogfirestore/decor_common.dart';
 import 'package:blogfirestore/spinner_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,49 +27,51 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
       ),
       body:
       needLoading? LoadSpinnerView() :
-      Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          GestureDetector(
-              onTap: () {
-                print("CLICKED");
-              },
-              child: Image.asset("images/blog.png")),
-          (whatTodo == 0)
-              ? Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            GestureDetector(
+                onTap: () {
+                  print("CLICKED");
+                },
+                child: Image.asset("images/blog.png")),
+            (whatTodo == 0)
+                ? Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        RaisedButton(
+                          child: Text("Register"),
+                          color: Colors.lightGreen,
+                          onPressed: () {
+                            setState(() {
+                              whatTodo = 1;
+                            });
+                          },
+                        ),
+                        RaisedButton(
+                          child: Text("SignIn"),
+                          color: Colors.lightGreen,
+                          onPressed: () {
+                            setState(() {
+                              whatTodo = 2;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    child: Column(
                     children: <Widget>[
-                      RaisedButton(
-                        child: Text("Register"),
-                        color: Colors.lightGreen,
-                        onPressed: () {
-                          setState(() {
-                            whatTodo = 1;
-                          });
-                        },
-                      ),
-                      RaisedButton(
-                        child: Text("SignIn"),
-                        color: Colors.lightGreen,
-                        onPressed: () {
-                          setState(() {
-                            whatTodo = 2;
-                          });
-                        },
-                      ),
+                      makeWidget(),
+                      makeLastRow(),
                     ],
-                  ),
+                  )
                 )
-              : Container(
-                  child: Column(
-                  children: <Widget>[
-                    makeWidget(),
-                    makeLastRow(),
-                  ],
-                )
-              )
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -129,8 +132,8 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
                       });
                     }//else.. there will be an Authchange that will be listened by the Stream & will change the screen to home automatically
                     else{
-                      final userRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Users');
-                      userRef.child(result.uid).set({'email':result.email});
+                      final userDocRef = Firestore.instance.document("FlutterBlog/Users/${result.uid}/Details");
+                      userDocRef.setData({'email':result.email});
                     }
                   }
                 }),

@@ -1,4 +1,5 @@
 import 'package:blogfirestore/show_blog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
@@ -16,15 +17,15 @@ class _SearchBlogsState extends State<SearchBlogs> {
   void myInit() async{
     print("myInit() starts =============");
 
-    final blogRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Blogs');
-    DataSnapshot snapshot = await blogRef.once();
-    print(snapshot.value);
-
-    Map<dynamic,dynamic> mapSnap = snapshot.value;
-    mapSnap.forEach((k,v){
-      print('$k : $v');
-      blogsList.add(Blog(k, v['text'], v['reactions'], v['email']));
+    final CollectionReference blogRef = Firestore.instance.collection('FlutterBlog/Blogs/BlogCollection');
+    QuerySnapshot querySnapshot = await blogRef.getDocuments();
+    print(querySnapshot);
+    querySnapshot.documents.forEach((eachDoc){
+      var valu = eachDoc.data;
+      print('$eachDoc');
+      blogsList.add(Blog(eachDoc.documentID, valu['text'], valu['reactions'], valu['email']));
     });
+
 
     //Now check all the Pojos if they were added, by looping through PojoList
     blogsList.forEach((obj){

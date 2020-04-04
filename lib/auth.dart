@@ -12,11 +12,6 @@ class Auth{
       AuthResult result = await authObj.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
 
-      //now db work
-      /*dbService dbObj = dbService(uid: user.uid);
-      List<String> naam = email.split('@');
-      await dbObj.settingUserData(naam[0], '1', 100);*/
-
       return user;//convert fbUser into USER pojo
 
     }catch(e){

@@ -1,5 +1,6 @@
 import 'package:blogfirestore/Comment.dart';
 import 'package:blogfirestore/blog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -59,18 +60,20 @@ class _ShowBlogState extends State<ShowBlog> {
   void getFromFirebase() async{
     print("myInit() starts =============");
 
-    final commentRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Comments/${b.id}');//-M2PXOYsignsPkBxe2ll');//${b.id}');
-    DataSnapshot snapshot = await commentRef.once();
-    print("SNAP: ${snapshot.value}");
+    final CollectionReference commentColRef = Firestore.instance.collection('FlutterBlog/Comments/${b.id}');//-M2PXOYsignsPkBxe2ll');//${b.id}');
+    QuerySnapshot querySnapshot = await commentColRef.getDocuments();
+    print("SNAP:done");
 
-    if(snapshot.value==null){return;}//dont go ahead without any data, means no comments till now
+    if(querySnapshot==null){return;}//dont go ahead without any data, means no comments till now
     // wont be any further errors as the list will be null & wont render in the widget tree
 
-    Map<dynamic,dynamic> mapSnap = snapshot.value;
-    mapSnap.forEach((k,v){
-      print('$k : $v');
-      commentList.add(Comment( v['email'],v['txt']));
+    querySnapshot.documents.forEach((eachDoc){
+      var valu = eachDoc.data;
+      print(valu);
+      commentList.add(Comment( valu['email'],valu['text']));
     });
+
+
 
     //Now check all the Pojos if they were added, by looping through PojoList
     commentList.forEach((obj){
@@ -91,12 +94,12 @@ class _ShowBlogState extends State<ShowBlog> {
     void comment2Firebase(String str, String e) async{
       print("comment2Firebase========");
       //to comment node
-      final commentRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Comments/${b.id}');
-      String id = commentRef.push().key;
-      await commentRef.child(id).set({'txt': str,'email': e});
+      final CollectionReference commentColRef = Firestore.instance.collection('FlutterBlog/Comments/${b.id}');//-M2PXOYsignsPkBxe2ll');//${b.id}');
+      var autoId = await commentColRef.add( {'text': str, 'email': e});
+      String id = autoId.documentID;
       //to my node
-      final myRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Users/$strUid/Posts/${b.id}/text');
-      myRef.set(b.txt);
+      final DocumentReference myDocRef = Firestore.instance.document('FlutterBlog/Users/$strUid/Posts/PostsCollection/${b.id}');
+      myDocRef.setData({'text' : b.txt});
 
       print("comment2Firebasexxxxxxxx");
   }
@@ -105,26 +108,28 @@ class _ShowBlogState extends State<ShowBlog> {
       //save to profile
       if(myReaction2save==myReaction){return;}//no need to do anything
       else if(myReaction2save!=null){
-            final reactionRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Users/$strUid/Posts/${b.id}');
-            reactionRef.update({'text': b.txt, 'myReaction': myReaction2save});
+        final DocumentReference reactionDocRef = Firestore.instance.document('FlutterBlog/Users/$strUid/Posts/PostsCollection/${b.id}');
+          reactionDocRef.setData({'text': b.txt, 'myReaction': myReaction2save});
           }
     //only if dint exist +1 to reactions in Blogs
       print('($myReaction == $myReaction2save) ??' );
       if(myReaction==null && myReaction2save!=null){
-        final blogRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Blogs/${b.id}/reactions');
+        final DocumentReference blogDocRef = Firestore.instance.document('FlutterBlog/Blogs/BlogCollection/${b.id}');
         b.reactions++;
-        blogRef.set(b.reactions);//since we are going all the way till the field in the ref no update or no json obj req.
+        blogDocRef.updateData({'reactions': b.reactions});//since we are going all the way till the field in the ref no update or no json obj req.
       }
   }
 
   void getReactionFromMyNode()async{
-    final reactionRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Users/$strUid/Posts/${b.id}/myReaction');//-M2PXOYsignsPkBxe2ll');//${b.id}');
-    DataSnapshot snapshot = await reactionRef.once();
-    print("SNAP of myReaction: ${snapshot.value}");
+    final DocumentReference reactionDocRef = Firestore.instance.document('FlutterBlog/Users/$strUid/Posts/PostsCollection/${b.id}');//-M2PXOYsignsPkBxe2ll');//${b.id}');
+    DocumentSnapshot snapshot = await reactionDocRef.get();
+    print("SNAP of myReaction: ${snapshot.data}");
 
-    if(snapshot.value==null){return;}//dont go ahead without any data, means no comments till now
+    bool testVal = snapshot?.data?.containsKey("myReaction") ?? false;
+
+    if(!testVal){print("OSRRY");return;}//dont go ahead without any data, means no comments till now
     // wont be any further errors as the list will be null & wont render in the widget tree
-    myReaction=snapshot.value;
+    myReaction=snapshot.data['myReaction'];
     setState(() {
       forLbtn = Image.asset('images/$myReaction.jpg',width: 30);
     });
@@ -143,6 +148,7 @@ class _ShowBlogState extends State<ShowBlog> {
         getReactionFromMyNode();
       }
 
+      user = Provider.of<FirebaseUser>(context);//this too cant be called outside build
 
 
       void showMyBottomSheet() {
@@ -200,7 +206,7 @@ class _ShowBlogState extends State<ShowBlog> {
                       IconButton(icon: Icon(Icons.send), iconSize: 28.0, color: Colors.lightBlue,
                         onPressed: ()async{
                           print("send=====");
-                          FirebaseUser user = Provider.of<FirebaseUser>(context);
+                         // FirebaseUser user = Provider.of<FirebaseUser>(context);
                           await comment2Firebase(myController.text,user.email);
                           commentList.clear();
                           getFromFirebase();
@@ -217,7 +223,7 @@ class _ShowBlogState extends State<ShowBlog> {
         });
       }
 
-      //user = Provider.of<FirebaseUser>(context);//this too cant be called outside build
+
 
 
 

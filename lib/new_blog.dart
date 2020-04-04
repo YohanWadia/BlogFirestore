@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -6,8 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:blogfirestore/main.dart';
 
 class NewBlog extends StatelessWidget {
-  final blogRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Blogs');
-  final userRef = FirebaseDatabase.instance.reference().child('FlutterBlog/Users');
+  final blogColRef = Firestore.instance.collection('FlutterBlog/Blogs/BlogCollection');//
+  CollectionReference userColRef;
   String txt;
   final snackBar = SnackBar(content: Text('Post has been Done!'));
 
@@ -17,6 +18,7 @@ class NewBlog extends StatelessWidget {
   Widget build(BuildContext context) {
     user = Provider.of<FirebaseUser>(context);
     print("from NewBlog:  $user.... ${user.email}");
+    userColRef = Firestore.instance.collection('FlutterBlog/Users/${user.uid}/Posts/PostsCollection');// 1st is collection 2nd is Doc 3r is uidCollection
 
     return Scaffold(
       backgroundColor: Colors.lightBlue[300],
@@ -91,17 +93,12 @@ class NewBlog extends StatelessWidget {
     ) ;
   }
 
-  void makeEntry(){
+  void makeEntry() async{
     print(txt);
-    String newNode = blogRef.push().key;
-    //blogRef.child(newNode).set({'text': txt, 'reactions': 0});
-    //userRef.child(user.uid+'/Posts/'+newNode).set({'text': txt});
-    //if you want to do it simultaneously like in Android or Js
-    Map<String, dynamic> mapUpdt = {};
-    mapUpdt['FlutterBlog/Blogs/' +  newNode] = {'text': txt, 'reactions': 0};
-    mapUpdt['FlutterBlog/Users/' + user.uid +'/Posts/' + newNode] = {'text': txt};
+    var autoId = await blogColRef.add( {'text': txt, 'email': user.email, 'reactions': 0});
+    String id = autoId.documentID;
+    await userColRef.document(id).setData({'text': txt});
 
-    FirebaseDatabase.instance.reference().update(mapUpdt);
   }
 
 
