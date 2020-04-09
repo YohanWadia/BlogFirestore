@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
     return StreamProvider<FirebaseUser>.value(//...will use this at 22222222
       value: Auth().AuthChangeStreamz,
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: StartPage(),
       ),
     );

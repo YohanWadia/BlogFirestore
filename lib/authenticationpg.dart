@@ -37,31 +37,42 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
                 },
                 child: Image.asset("images/blog.png")),
             (whatTodo == 0)
-                ? Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        RaisedButton(
-                          child: Text("Register"),
-                          color: Colors.lightGreen,
-                          onPressed: () {
-                            setState(() {
-                              whatTodo = 1;
-                            });
-                          },
-                        ),
-                        RaisedButton(
-                          child: Text("SignIn"),
-                          color: Colors.lightGreen,
-                          onPressed: () {
-                            setState(() {
-                              whatTodo = 2;
-                            });
-                          },
-                        ),
-                      ],
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    RaisedButton(
+                      child: Text("Register"),
+                      color: Colors.lightGreen,
+                      splashColor: Colors.green[800],
+                      //elevation: 2.0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: new BorderRadius.circular(10.0),
+                          //side: BorderSide(color: Colors.green[800])
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          whatTodo = 1;
+                        });
+                      },
                     ),
-                  )
+                    SizedBox(width:15.0),
+                    RaisedButton(
+                      child: Text("SignIn"),
+                      color: Colors.lightGreen,
+                      splashColor: Colors.green[800],
+                      //elevation: 2.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: new BorderRadius.circular(10.0),
+                        //side: BorderSide(color: Colors.green[800])
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          whatTodo = 2;
+                        });
+                      },
+                    ),
+                  ],
+                )
                 : Container(
                     child: Column(
                     children: <Widget>[
@@ -77,28 +88,31 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
   }
 
   makeWidget() {
-    return Form(
-      key: formKey,
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 5.0),
-          TextFormField(
-            decoration: myDecoration.copyWith(hintText: "Enter Email"),
-            validator: (val) => val.isEmpty ? "Email is needed" : null,
-            onChanged: (val) {
-              setState(() => email = val);
-            },
-          ),
-          SizedBox(height: 5.0),
-          TextFormField(
-            decoration: myDecoration.copyWith(hintText: "password please"),
-            validator: (val) => val.length < 6 ? "Minimum 6 char needed" : null,
-            obscureText: true,
-            onChanged: (val) {
-              setState(() => password = val);
-            },
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
+        key: formKey,
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 5.0),
+            TextFormField(
+              decoration: myDecoration.copyWith(hintText: "Enter Email"),
+              validator: (val) => val.isEmpty ? "Email is needed" : null,
+              onChanged: (val) {
+                setState(() => email = val);
+              },
+            ),
+            SizedBox(height: 5.0),
+            TextFormField(
+              decoration: myDecoration.copyWith(hintText: "password please"),
+              validator: (val) => val.length < 6 ? "Minimum 6 char needed" : null,
+              obscureText: true,
+              onChanged: (val) {
+                setState(() => password = val);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,12 +121,17 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
     if (whatTodo == 1) {
       return Column(children: <Widget>[
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             RaisedButton(
                 color: Colors.pink[400],
                 child: Text(
                   'Register',
                   style: TextStyle(color: Colors.white),
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(4.0),
+                    //side: BorderSide(color: Colors.pink[400],width: 2.0)
                 ),
                 onPressed: () async {
                   if (formKey.currentState.validate()) {
@@ -137,9 +156,14 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
                     }
                   }
                 }),
+            SizedBox(width: 15.0,),
             RaisedButton(
-              child: Text("Back"),
-              color: Colors.pink[400],
+              child: Text("BACK"),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(4.0),
+                      side: BorderSide(color: Colors.pink[400],width: 2.0)
+                      ),
               onPressed: () {
                 setState(() {
                   whatTodo = 0;
@@ -158,6 +182,7 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
     } else {
       return Column(children: <Widget>[
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             RaisedButton(
               color: Colors.lightGreen,
@@ -183,9 +208,13 @@ class _AuthenticationPgState extends State<AuthenticationPg> {
 
               },
             ),
+            SizedBox(width: 15.0,),
             RaisedButton(
               child: Text("Back"),
-              color: Colors.lightGreen,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.lightGreen,width: 2.0)
+              ),
               onPressed: () {
                 setState(() {
                   whatTodo = 0;

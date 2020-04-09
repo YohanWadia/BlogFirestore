@@ -19,6 +19,7 @@ class _ShowBlogState extends State<ShowBlog> {
   FirebaseUser user;
   String strUid;
   String myReaction, myReaction2save;
+  String ifUpdtExisted;
 
 
   var _tapPosition;
@@ -99,24 +100,57 @@ class _ShowBlogState extends State<ShowBlog> {
       String id = autoId.documentID;
       //to my node
       final DocumentReference myDocRef = Firestore.instance.document('FlutterBlog/Users/$strUid/Posts/PostsCollection/${b.id}');
-      myDocRef.setData({'text' : b.txt});
+      await myDocRef.setData({'text' : b.txt, 'update': ifUpdtExisted, 'reaction': myReaction });
+
+      //send notis to everyone in the blog's notiList
+      bool present=false;
+      final DocumentReference blogDocRef = Firestore.instance.document('FlutterBlog/Blogs/BlogCollection/${b.id}');
+      QuerySnapshot snapshot = await blogDocRef.collection('forNotifications').getDocuments();
+      snapshot.documents.forEach((element) {
+        String hisUid = element.documentID;print("Got docId/uid: $hisUid");
+        final DocumentReference userDocRef = Firestore.instance.document('FlutterBlog/Users/$hisUid/Posts/PostsCollection/${b.id}');
+        userDocRef.get().then((docSnap){
+          if(hisUid==user.uid){present=true;}//if hes already in the list...dont again add him.. see 22222
+          userDocRef.updateData({'update':"${user.email} just commented to a post"});  print("finished with $hisUid");
+        });
+      });
+
+      //add to noti list ... 222222
+      if(!present){ blogDocRef.collection('forNotifications').document(user.uid).setData({ });}
 
       print("comment2Firebasexxxxxxxx");
   }
 
-  void saveReaction2Firebase(){
+  void saveReaction2Firebase() async{
       //save to profile
       if(myReaction2save==myReaction){return;}//no need to do anything
       else if(myReaction2save!=null){
         final DocumentReference reactionDocRef = Firestore.instance.document('FlutterBlog/Users/$strUid/Posts/PostsCollection/${b.id}');
-          reactionDocRef.setData({'text': b.txt, 'myReaction': myReaction2save});
+          reactionDocRef.setData({'text': b.txt, 'myReaction': myReaction2save, 'update': ifUpdtExisted});
           }
     //only if dint exist +1 to reactions in Blogs
       print('($myReaction == $myReaction2save) ??' );
       if(myReaction==null && myReaction2save!=null){
+        //add to views
         final DocumentReference blogDocRef = Firestore.instance.document('FlutterBlog/Blogs/BlogCollection/${b.id}');
         b.reactions++;
         blogDocRef.updateData({'reactions': b.reactions});//since we are going all the way till the field in the ref no update or no json obj req.
+
+        //send notis to everyone in the blog's notiList
+        bool present=false;
+        QuerySnapshot snapshot = await blogDocRef.collection('forNotifications').getDocuments();
+        snapshot.documents.forEach((element) {
+          String hisUid = element.documentID;print("Got docId/uid: $hisUid");
+          final DocumentReference userDocRef = Firestore.instance.document('FlutterBlog/Users/$hisUid/Posts/PostsCollection/${b.id}');
+              userDocRef.get().then((docSnap){
+                  if(hisUid==user.uid){present=true;}//if hes already in the list...dont again add him.. see 22222
+                  userDocRef.updateData({'update':"${user.email} just reacted to a post"});  print("finished with $hisUid");
+              });
+        });
+
+        //add to noti list ... 222222
+        if(!present){ blogDocRef.collection('forNotifications').document(user.uid).setData({ });}
+
       }
   }
 
@@ -125,11 +159,16 @@ class _ShowBlogState extends State<ShowBlog> {
     DocumentSnapshot snapshot = await reactionDocRef.get();
     print("SNAP of myReaction: ${snapshot.data}");
 
-    bool testVal = snapshot?.data?.containsKey("myReaction") ?? false;
+    bool test4Update = snapshot?.data?.containsKey("update") ?? false;
+    if(test4Update){ifUpdtExisted = snapshot.data['update'];}//so if it did exist we got its value.. and it can never be null it'll be 'x'
 
-    if(!testVal){print("OSRRY");return;}//dont go ahead without any data, means no comments till now
-    // wont be any further errors as the list will be null & wont render in the widget tree
+    print("RND-- ${snapshot?.data?.containsKey("myReaction")}");//if it contains the key it will be true... but it could contain the key and be null!!
+    bool test4Reaction = snapshot?.data?.containsKey("myReaction") ?? false;
+
+    if(!test4Reaction) {print("ORRY not contained");return;}//dont go ahead without any data, means no reactions till now & wont setState.. and will load the original forLbtn from initialization
     myReaction=snapshot.data['myReaction'];
+    if(myReaction==null){print("Contained but null");return;}//dont go ahead since its null, means no reactions till now & wont setState.. and will load the original forLbtn from initialization
+
     setState(() {
       forLbtn = Image.asset('images/$myReaction.jpg',width: 30);
     });

@@ -23,7 +23,7 @@ class _SearchBlogsState extends State<SearchBlogs> {
     querySnapshot.documents.forEach((eachDoc){
       var valu = eachDoc.data;
       print('$eachDoc');
-      blogsList.add(Blog(eachDoc.documentID, valu['text'], valu['reactions'], valu['email']));
+      blogsList.add(Blog(eachDoc.documentID, valu['text'], valu['reactions'], valu['email'], valu['update']));
     });
 
 

@@ -97,7 +97,8 @@ class NewBlog extends StatelessWidget {
     print(txt);
     var autoId = await blogColRef.add( {'text': txt, 'email': user.email, 'reactions': 0});
     String id = autoId.documentID;
-    await userColRef.document(id).setData({'text': txt});
+    blogColRef.document(id).collection('forNotifications').document(user.uid).setData({ });
+    await userColRef.document(id).setData({'text': txt, 'update' : 'x'});
 
   }
 
