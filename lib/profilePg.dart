@@ -1,7 +1,10 @@
 
 import 'package:blogfirestore/auth.dart';
 import 'package:blogfirestore/new_blog.dart';
+import 'package:blogfirestore/noti.dart';
+import 'package:blogfirestore/noti_list.dart';
 import 'package:blogfirestore/search_blogs.dart';
+import 'package:blogfirestore/settings_pg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,16 +24,24 @@ class _ProfilePgState extends State<ProfilePg> {
   final GlobalKey<FabCircularMenuState> fabKey = GlobalKey();
   FirebaseUser user;
   CollectionReference myRef;
+  List<noti> forNotiList=[];//for notiList pg where provider wont work
 
   Stream<List<dynamic>> get pojoStuff{
     myRef = Firestore.instance.collection('FlutterBlog/Users/${user.uid}/Posts/PostsCollection');
+    forNotiList.clear();
     return myRef.snapshots().map(makeNotiListfromSnapshot);
   }
 
   List<dynamic> makeNotiListfromSnapshot(QuerySnapshot snapshot) {
+    print("over here.......");
     return snapshot.documents.map((eachDoc) {
-        print("...at ... ${eachDoc.data['update']} ");
-        return eachDoc.data['update'];
+        String str = eachDoc.data['update'];
+        print("...at ${eachDoc.documentID} ... $str ");
+        if(str!=null && str!='x'){//while you are returning the dynamic list as a stream... also build a list for the NotiPg that
+          bool bul = str.contains("commented");//needs the docId and if it was a comment
+          forNotiList.add(noti(eachDoc.documentID,str, bul));
+        }
+        return str;
     }).toList();
   }
 
@@ -57,7 +68,7 @@ class _ProfilePgState extends State<ProfilePg> {
                   onPressed: (){},
             )*/
             Container(
-              color: Colors.green[200],
+              //color: Colors.green[200],
               padding: EdgeInsets.all(2),
               child: myBadgeWidget(user),//separate widget as this needs state & parent widget is stateless
             ),
@@ -83,6 +94,8 @@ class _ProfilePgState extends State<ProfilePg> {
               children: <Widget>[
                 IconButton(icon: Icon(Icons.notifications),iconSize: 40, onPressed: () {
                   print('Home');
+                  fabKey.currentState.close();
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotiList(forNotiList)) );
                 }),
                 IconButton(icon: Icon(Icons.fiber_new),iconSize: 40, onPressed: () {
                   print('new');
@@ -93,6 +106,11 @@ class _ProfilePgState extends State<ProfilePg> {
                   print('search');
                   fabKey.currentState.close();
                   Navigator.push(context,MaterialPageRoute(builder: (context)=> SearchBlogs()));
+                }),
+                IconButton(icon: Icon(Icons.settings), iconSize: 40, onPressed: () {
+                  print('search');
+                  fabKey.currentState.close();
+                  Navigator.push(context,MaterialPageRoute(builder: (context)=> MySettingsPage()));
                 }),
               ]
           )

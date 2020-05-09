@@ -1,5 +1,6 @@
 import 'package:blogfirestore/Comment.dart';
 import 'package:blogfirestore/blog.dart';
+import 'package:blogfirestore/my_animation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -20,6 +21,8 @@ class _ShowBlogState extends State<ShowBlog> {
   String strUid;
   String myReaction, myReaction2save;
   String ifUpdtExisted;
+  List<int> miniLike=[];//only workaround cause the pojo doesnt hava these values
+  List<bool> doneMiniLike=[];//only workaround cause the pojo doesnt hava these values
 
 
   var _tapPosition;
@@ -172,9 +175,14 @@ class _ShowBlogState extends State<ShowBlog> {
     setState(() {
       forLbtn = Image.asset('images/$myReaction.jpg',width: 30);
     });
-
   }
 
+
+  @override
+  void initState() {
+    miniLike = List<int>.generate(12, (i) => 0);//just preparing a list of 12 integers of val=0.. for minilikes per comment
+    doneMiniLike = List<bool>.generate(12, (i)=>false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +221,7 @@ class _ShowBlogState extends State<ShowBlog> {
                     itemCount: commentList.length,
                     itemBuilder: (context,index){
                       print("building starts");
-                      return CommentTile(commentList[index]);
+                      return CommentTile(commentList[index],index);
                     }
                 ),
               ),
@@ -344,7 +352,7 @@ class _ShowBlogState extends State<ShowBlog> {
                       itemCount: commentList.length,
                       itemBuilder: (context,index){
                         print("building starts");
-                        return CommentTile(commentList[index]);
+                        return CommentTile(commentList[index],index);
                       }
                   ),
                 )
@@ -368,8 +376,8 @@ class _ShowBlogState extends State<ShowBlog> {
 
 
 
-    Widget CommentTile(Comment c) {
-    print("tile.... ${c.txt}");
+    Widget CommentTile(Comment c, int indx) {
+    print("tile.... ${c.txt}.... $indx");
     return Padding(
       padding: EdgeInsets.all(10),
       child: Row(
@@ -382,25 +390,62 @@ class _ShowBlogState extends State<ShowBlog> {
          ),
           Expanded(
             child: Container(
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                   padding: EdgeInsets.symmetric(horizontal: 12.0,vertical: 8.0),
-                  decoration: BoxDecoration(color: Colors.grey[200],borderRadius: BorderRadius.circular(15)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(c.email,style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold)),
-                      Text(c.txt,style: TextStyle(fontSize: 16.0),softWrap: true,),
-                      SizedBox(height: 10.0,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          Text("Like",style: TextStyle(fontSize: 12,color: Colors.grey[600],fontWeight: FontWeight.bold)),
-                          SizedBox(width: 15.0),
-                          Text("Reply",style: TextStyle(fontSize: 12,color: Colors.grey[600],fontWeight: FontWeight.bold)),
-                        ],
-                      )
-                    ],
-                  )
-              ),
+                    decoration: BoxDecoration(color: Colors.grey[200],borderRadius: BorderRadius.circular(15)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(c.email,style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold)),
+                        Text(c.txt,style: TextStyle(fontSize: 16.0),softWrap: true,),
+                        SizedBox(height: 10.0,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            (miniLike[indx]==0 || doneMiniLike[indx]==false)?
+                              GestureDetector(
+                                  child: Text("Like",style: TextStyle(fontSize: 18,color: Colors.grey[600],fontWeight: FontWeight.bold)),
+                              onTap: (){
+                                    miniLike[indx]++;
+                                    setState(() {
+                                      doneMiniLike[indx]= !(doneMiniLike[indx]);
+                                      miniLike[indx];
+                                    });
+                              },
+                              )
+                            :   // .... or....
+                            GestureDetector(
+                                child: Icon(Icons.thumb_up,color: Colors.blue),
+                              onTap: (){
+                                miniLike[indx]--;
+                                setState(() {
+                                  doneMiniLike[indx]=!(doneMiniLike[indx]);
+                                  miniLike[indx];
+                                });
+                              },
+                            ),
+
+                            SizedBox(width: 15.0),
+                            Text("Reply",style: TextStyle(fontSize: 18,color: Colors.grey[600],fontWeight: FontWeight.bold)),
+                          ],
+                        )
+                      ],
+                    )
+                ),
+
+                  (miniLike[indx]==0)? Container()//means return an empty container.. or you could use Visibility widget
+                      :  // .... or....
+                  Positioned(
+                      left: 15, bottom: 0,
+                      child: AnimateMiniLike(miniLike[indx])),
+
+
+                ],
+            ),
+          ),
           ),
         ],
       ),
