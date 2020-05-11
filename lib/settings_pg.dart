@@ -21,7 +21,7 @@ class MySettingsPageState extends State<MySettingsPage> {
         title: Text("Fancy Bottom Navigation"),
       ),
       body: Container(
-        decoration: BoxDecoration(color: Colors.white),
+        decoration: BoxDecoration(color: Colors.lightBlue[100]),
         child: Center(
           child: _getPage(currentPage),
         ),
@@ -98,7 +98,6 @@ class MySettingsPageState extends State<MySettingsPage> {
                 Text("Balance", style: TextStyle(fontSize: 24.0),),
               ],
             ),
-
           ],
         ),
       ),
@@ -119,7 +118,7 @@ class MySettingsPageState extends State<MySettingsPage> {
               ),
               color: Theme.of(context).primaryColor,
               onPressed: () {
-                //Navigator.of(context).push(                    MaterialPageRoute(builder: (context) => SecondPage()));
+                //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SecondPage()));
               },
             ),
             RaisedButton(
