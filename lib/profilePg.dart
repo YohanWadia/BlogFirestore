@@ -26,14 +26,16 @@ class _ProfilePgState extends State<ProfilePg> {
   CollectionReference myRef;
   List<noti> forNotiList=[];//for notiList pg where provider wont work
 
-  Stream<List<dynamic>> get pojoStuff{
+  Stream<List<dynamic>> get pojoStuff{//this doesnt fire everytime there is an update or change. it only organises it the first time.. after that,
+    print("over here.......000000000000");// it's makeNotiListfromSnapshot() is the only one to keep firing.
     myRef = Firestore.instance.collection('FlutterBlog/Users/${user.uid}/Posts/PostsCollection');
     forNotiList.clear();
     return myRef.snapshots().map(makeNotiListfromSnapshot);
   }
 
   List<dynamic> makeNotiListfromSnapshot(QuerySnapshot snapshot) {
-    print("over here.......");
+    print("over here.......111111111111");
+    forNotiList.clear();//otherwise everytime it fires .. it keeps appending new records
     return snapshot.documents.map((eachDoc) {
         String str = eachDoc.data['update'];
         print("...at ${eachDoc.documentID} ... $str ");
@@ -93,7 +95,7 @@ class _ProfilePgState extends State<ProfilePg> {
             ringColor: Color.fromARGB(128, 200, 0, 200),
               children: <Widget>[
                 IconButton(icon: Icon(Icons.notifications),iconSize: 40, onPressed: () {
-                  print('Home');
+                  print('NOTIlist click...');
                   fabKey.currentState.close();
                   Navigator.push(context, MaterialPageRoute(builder: (context) => NotiList(forNotiList)) );
                 }),

@@ -6,8 +6,9 @@ import 'package:provider/provider.dart';
 
 class NotiList extends StatefulWidget {
   List<dynamic> items= List<String>();
-
-  NotiList(this.items);
+  NotiList(this.items){
+    items.forEach((x) => print("STFUL------ ${x.toString()}"));
+  }
 
   @override
   _NotiListState createState() => _NotiListState();
@@ -21,9 +22,9 @@ class _NotiListState extends State<NotiList> {
 
   @override
   Widget build(BuildContext context) {
-
+    print("BUILD()=============");
     user = Provider.of<FirebaseUser>(context);
-    widget.items.forEach((x) => print("000000 $x"));
+    widget.items.forEach((x) => print("000000 ${x.toString()}"));
 
     return Scaffold(
       appBar: AppBar(
@@ -33,6 +34,7 @@ class _NotiListState extends State<NotiList> {
         itemCount: widget.items.length,
         itemBuilder: (context, index) {
           final noti item = widget.items[index];
+          print("ListView>>> ${item.str}");
 
           return Dismissible(
             key: Key(item.docId),
@@ -90,7 +92,7 @@ class _NotiListState extends State<NotiList> {
 
             //designing of listTile
             child: Container(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: Colors.blue), bottom: BorderSide(color: Colors.blue),
@@ -98,7 +100,7 @@ class _NotiListState extends State<NotiList> {
                 color: Colors.lightBlue[50],
               ),
               child: ListTile(
-                  title: Text('${item.str}', style: TextStyle( fontSize: 24,fontWeight: FontWeight.bold),),
+                  title: Text('${item.str}', style: TextStyle( fontSize: 18,fontWeight: FontWeight.bold),),
                 leading: Icon(Icons.supervised_user_circle,size: 48),
                 trailing: (item.isComment)? Icon(Icons.comment,size: 36) : Icon(Icons.insert_emoticon,size: 36),
 
