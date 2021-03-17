@@ -49,7 +49,7 @@ class _ProfilePgState extends State<ProfilePg> {
 
   @override
   Widget build(BuildContext context) {
-    user = Provider.of<FirebaseUser>(context);
+    user = Provider.of<FirebaseUser>(context);//have to put listen: false... if you dont want to continuously listen
     print("Profile pg:  $user");
 
     return StreamProvider<List<dynamic>>.value(
